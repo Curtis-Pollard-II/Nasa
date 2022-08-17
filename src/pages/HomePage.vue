@@ -1,36 +1,61 @@
 <template>
-  <div class="home flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-    <div class="home-card p-5 bg-white rounded elevation-3">
-      <img src="https://bcw.blob.core.windows.net/public/img/8600856373152463" alt="CodeWorks Logo" class="rounded-circle">
-      <h1 class="my-5 bg-dark text-white p-3 rounded text-center">
-        Vue 3 Starter
-      </h1>
+  <div class="home-page">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <form @submit="searchPicture()" action="">
+            <input type="date" v-model="editable.date"> 
+            <button type="submit">Submit</button>
+          </form>
+        </div>
+        <div class="col-6" >
+          <PictureCard :picture="picture"/>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { computed, onMounted, ref } from '@vue/runtime-core'
+import { picturesService } from '../services/PicturesService'
+import { logger } from '../utils/Logger'
+import Pop from '../utils/Pop'
+import { AppState } from '../AppState'
 export default {
-  name: 'Home'
+  setup(){
+const editable = ref({})
+    async function getPictures(){
+      try {
+        await picturesService.getPictures()
+      } catch (error) {
+        logger.error('getting pictures', error)
+        Pop.toast(error.message, 'error')
+      }
+    }
+    onMounted(() => {
+      getPictures()
+    })
+
+    return {
+      editable,
+      picture: computed(() => AppState.picture),
+     async searchPicture(){
+        try {
+          await picturesService.searchPicture(editable.value)
+        } catch (error) {
+          logger.log(error.message)
+        }
+      }
+    }
+
+
+
+  }
+
 }
 </script>
 
 <style scoped lang="scss">
-.home{
-  display: grid;
-  height: 80vh;
-  place-content: center;
-  text-align: center;
-  user-select: none;
-  .home-card{
-    width: 50vw;
-    > img{
-      height: 200px;
-      max-width: 200px;
-      width: 100%;
-      object-fit: contain;
-      object-position: center;
-    }
-  }
-}
+
 </style>
